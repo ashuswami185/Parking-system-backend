@@ -4,7 +4,7 @@
   "description": "Backend for NEEPCO Procurement Data & Vendor Payment Portal",
   "main": "server.js",
   "scripts": {
-    "start": "node --no-deprecation server.js",
+    "start": "nodemon server.js",
     "dev": "nodemon --exec \"node --no-deprecation\" server.js",
     "seed": "node scripts/seed.js",
     "verify-admin": "node scripts/verify-admin.js"
@@ -31,6 +31,6 @@
     "otp-generator": "^4.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.1.14"
   }
 }

@@ -55,6 +55,30 @@ const seedData = async () => {
       isActive: true
     });
 
+    const vendor3 = await User.create({
+        name: 'EcoEnergy Systems',
+        email: 'vendor3@example.com',
+        password: 'Password@123',
+        role: 'vendor',
+        companyName: 'EcoEnergy Systems',
+        vendorId: 'VEN-1003',
+        phone: '9876543212',
+        address: 'Green Valley, Solar City',
+        isActive: true
+    });
+
+    const vendor4 = await User.create({
+        name: 'Rapid Logistics',
+        email: 'vendor4@example.com',
+        password: 'Password@123',
+        role: 'vendor',
+        companyName: 'Rapid Logistics',
+        vendorId: 'VEN-1004',
+        phone: '9876543213',
+        address: 'Harbor Road, Port City',
+        isActive: true
+    });
+
     // 2. Create Auditor
     const auditor = await User.create({
       name: 'Audit Officer',
@@ -75,9 +99,8 @@ const seedData = async () => {
             isActive: true
         });
     } else {
-        // Explicitly update existing admin password to match test account
         admin.password = 'Password@123';
-        admin.email = 'admin@neepco.com'; // Ensure we use this email
+        admin.email = 'admin@neepco.com'; 
         await admin.save();
     }
 
@@ -95,7 +118,7 @@ const seedData = async () => {
       isMSE: false,
       isGeM: true,
       gemOrderId: 'GEM-9901',
-      procurementDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      procurementDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       deliveryDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
       createdBy: admin._id,
       approvedBy: auditor._id,
@@ -137,6 +160,40 @@ const seedData = async () => {
         createdBy: admin._id,
     });
 
+    const procurement4 = await Procurement.create({
+        purchaseId: 'PO-2024-004',
+        itemName: 'Solar Panels 500W',
+        description: 'Renewable energy pilot program',
+        vendorName: vendor3.companyName,
+        vendorId: vendor3._id,
+        amount: 3200000,
+        quantity: 200,
+        status: 'rejected',
+        category: 'Energy',
+        isMSE: true,
+        isGeM: true,
+        gemOrderId: 'GEM-9903',
+        procurementDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        createdBy: admin._id,
+        remarks: 'Technical specifications did not meet project requirements'
+    });
+
+    const procurement5 = await Procurement.create({
+        purchaseId: 'PO-2024-005',
+        itemName: 'HVAC Maintenance Service',
+        description: 'Annual maintenance for Shillong office',
+        vendorName: vendor4.companyName,
+        vendorId: vendor4._id,
+        amount: 150000,
+        quantity: 1,
+        status: 'approved',
+        category: 'Services',
+        isMSE: true,
+        isGeM: false,
+        procurementDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        createdBy: admin._id
+    });
+
     // 5. Create Payments
     await Payment.create({
       vendorId: vendor1._id,
@@ -167,14 +224,45 @@ const seedData = async () => {
       createdBy: admin._id
     });
 
+    await Payment.create({
+        vendorId: vendor3._id,
+        vendorName: vendor3.companyName,
+        procurementId: procurement4._id,
+        invoiceNo: 'INV-2024-091',
+        amount: 3200000,
+        paymentStatus: 'failed',
+        paymentMode: 'online',
+        transactionId: 'TXN_ERR_404',
+        invoiceDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        createdBy: admin._id,
+        remarks: 'Transaction timed out at bank gateway'
+    });
+
+    await Payment.create({
+        vendorId: vendor4._id,
+        vendorName: vendor4.companyName,
+        procurementId: procurement5._id,
+        invoiceNo: 'INV-2024-092',
+        amount: 75000, // Partial payment
+        paymentStatus: 'processing',
+        paymentMode: 'neft',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+        createdBy: admin._id
+    });
+
     console.log('✅ Dummy data seeded successfully!');
     console.log('-----------------------------------');
     console.log('TEST ACCOUNTS:');
     console.log('Admin  : admin@neepco.com    / Password@123');
     console.log('Vendor1: vendor1@example.com / Password@123');
     console.log('Vendor2: vendor2@example.com / Password@123');
+    console.log('Vendor3: vendor3@example.com / Password@123');
+    console.log('Vendor4: vendor4@example.com / Password@123');
     console.log('Auditor: auditor@example.com / Password@123');
     console.log('-----------------------------------');
+
 
     process.exit(0);
   } catch (error) {
