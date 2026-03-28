@@ -10,7 +10,6 @@ const otpStore = new Map();
 
 // Helper to send email
 const sendEmail = async (options) => {
-  // If no SMTP, just log it for local testing
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.ethereal.email',
     port: process.env.SMTP_PORT || 587,
@@ -21,20 +20,59 @@ const sendEmail = async (options) => {
   });
   
   try {
-    if (process.env.SMTP_HOST) {
-      await transporter.sendMail({
+    const mailOptions = {
         from: `NEEPCO Portal <noreply@neepco.com>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
-      });
+    };
+
+    if (options.html) {
+      mailOptions.html = options.html;
+    }
+
+    if (process.env.SMTP_HOST) {
+      await transporter.sendMail(mailOptions);
     } else {
       console.log(`[EMAIL MOCK] To: ${options.email} | Subject: ${options.subject}`);
       console.log(`[EMAIL MOCK] Message: \n${options.message}`);
+      if (options.html) console.log(`[EMAIL MOCK] HTML Content Included`);
     }
   } catch(e) {
     console.error('Email sending failed:', e);
   }
+};
+
+// Welcome Email Template Helper
+const getWelcomeEmailTemplate = (name) => {
+  return `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #004F71; padding: 20px; border-radius: 8px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #004F71; margin: 0;">Welcome to NEEPCO Portal</h1>
+      </div>
+      <div style="line-height: 1.6;">
+        <p>Dear <strong>${name}</strong>,</p>
+        <p>Your account has been successfully created and verified on the <strong>NEEPCO Procurement Data & Vendor Payment Portal</strong>.</p>
+        <p>You can now log in to the portal using your registered email address and password to manage your procurement data and vendor payments securely.</p>
+        <div style="background-color: #f1f8fc; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 5px solid #004F71;">
+          <h3 style="margin-top: 0; color: #004F71;">Key Features:</h3>
+          <ul style="margin-bottom: 0;">
+            <li>Real-time procurement data access</li>
+            <li>Vendor payment tracking</li>
+            <li>Official documentation portal</li>
+            <li>Secure data management</li>
+          </ul>
+        </div>
+        <p>If you have any questions or require support, please feel free to reach out to our team.</p>
+        <p>Best regards,<br>
+        <strong>NEEPCO Portal Team</strong></p>
+      </div>
+      <div style="margin-top: 30px; font-size: 12px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+        <p>This is an automated message, please do not reply to this email.</p>
+        <p>&copy; ${new Date().getFullYear()} NEEPCO Ltd.</p>
+      </div>
+    </div>
+  `;
 };
 
 // Generate JWT Token
@@ -89,6 +127,16 @@ exports.register = async (req, res) => {
       module: 'auth',
       details: `User registered with role: ${user.role}`,
       ipAddress: req.ip
+    });
+
+    // Send Welcome Email
+    const welcomeMessage = `Dear ${user.name},\n\nWelcome to the NEEPCO Procurement Portal! Your account has been successfully created.\n\nYou can now log in to the portal using your email address and password to manage your procurement data and vendor payments.\n\nThank you,\nNEEPCO Portal Team`;
+    
+    await sendEmail({
+      email: user.email,
+      subject: 'Welcome to NEEPCO Portal',
+      message: welcomeMessage,
+      html: getWelcomeEmailTemplate(user.name)
     });
 
     res.status(201).json({
@@ -305,6 +353,16 @@ exports.registerWithOtp = async (req, res) => {
 
     // Clear OTP
     otpStore.delete(email);
+
+    // Send Welcome Email
+    const welcomeMessage = `Dear ${user.name},\n\nWelcome to the NEEPCO Procurement Portal! Your account has been successfully created and verified via OTP.\n\nYou can now log in to the portal using your email address and password to manage your procurement data and vendor payments.\n\nThank you,\nNEEPCO Portal Team`;
+    
+    await sendEmail({
+      email: user.email,
+      subject: 'Welcome to NEEPCO Portal',
+      message: welcomeMessage,
+      html: getWelcomeEmailTemplate(user.name)
+    });
 
     res.status(201).json({
       success: true,
