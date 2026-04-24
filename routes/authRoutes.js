@@ -7,7 +7,9 @@ const {
   getMe,
   updateProfile,
   sendOtp,
-  registerWithOtp
+  registerWithOtp,
+  forgotPassword,
+  resetPassword
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -25,10 +27,22 @@ const loginValidation = [
   body('password', 'Password is required').exists(),
 ];
 
+const forgotPasswordValidation = [
+  body('email', 'Please include a valid email').isEmail(),
+];
+
+const resetPasswordValidation = [
+  body('resetToken', 'Reset token is required').not().isEmpty(),
+  body('newPassword', 'New password must be at least 8 characters long, contain 1 uppercase, 1 lowercase, 1 number, and 1 special character')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/),
+];
+
 router.post('/send-otp', registerValidation, sendOtp);
 router.post('/register-with-otp', registerWithOtp);
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
+router.post('/forgot-password', forgotPasswordValidation, forgotPassword);
+router.post('/reset-password', resetPasswordValidation, resetPassword);
 router.get('/me', protect, getMe);
 router.put('/update', protect, updateProfile);
 

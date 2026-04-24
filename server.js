@@ -35,8 +35,8 @@ app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'NEEPCO Procurement API is running',
     timestamp: new Date().toISOString()
   });
@@ -50,4 +50,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
-

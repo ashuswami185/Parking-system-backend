@@ -18,7 +18,8 @@ const auditLogSchema = new mongoose.Schema({
       'delete_procurement', 'approve_procurement', 'reject_procurement',
       'create_payment', 'update_payment', 'delete_payment', 
       'create_user', 'update_user', 'delete_user',
-      'export_data', 'import_data', 'generate_report'
+      'export_data', 'import_data', 'generate_report',
+      'password_reset_request', 'password_reset'
     ]
   },
   module: {
